@@ -68,3 +68,29 @@ jobs:
 
       - name: Run go vet
         run: go vet ./...
+
+  build-mac:
+    name: Build Mac Binary (arm64)
+    needs: [test, lint]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+
+      - name: Build Mac Binary
+        env:
+          GOOS: darwin
+          GOARCH: arm64
+        run: go build -v -o developer-help-tool-cli .
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: developer-help-tool-cli-mac-arm64
+          path: developer-help-tool-cli
+          retention-days: 7
