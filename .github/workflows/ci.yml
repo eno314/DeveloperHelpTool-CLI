@@ -28,7 +28,13 @@ jobs:
       - name: Run tests
         run: go test -v -race -cover ./...
 
+      - name: Temporarily downgrade Go version for linter
+        # golangci-lint fails if the go version in go.mod is newer than what it was built with.
+        # This temporarily edits go.mod to bypass the check.
+        run: go mod edit -go=1.24
+
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.60
+          skip-cache: true
