@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: Build, Test and Lint
+    name: Build and Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -28,10 +28,24 @@ jobs:
       - name: Run tests
         run: go test -v -race -cover ./...
 
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Temporarily downgrade Go version for linter
         # golangci-lint fails if the go version in go.mod is newer than what it was built with.
         # This temporarily edits go.mod to bypass the check.
+        # We also run lint in a separate job to avoid conflict with Go 1.26.1 artifacts.
         run: go mod edit -go=1.23
+
+      - name: Set up Go for linting
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache: false
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
