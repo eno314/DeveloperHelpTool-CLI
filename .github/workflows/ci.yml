@@ -26,7 +26,30 @@ jobs:
         run: go build -v ./...
 
       - name: Run tests
-        run: go test -v -race -cover ./...
+        run: go test -v -race -coverprofile=coverage.out ./...
+
+      - name: Report code coverage
+        if: always()
+        run: |
+          echo "### Code Coverage" >> $GITHUB_STEP_SUMMARY
+          echo "| File | Function | Coverage |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|---|" >> $GITHUB_STEP_SUMMARY
+
+          # Use go tool cover to generate coverage per function
+          go tool cover -func=coverage.out > coverage.txt
+
+          # Parse the output and append to the step summary
+          awk -F'\t+' '
+            $1 != "total:" {
+              split($1, a, "/")
+              filename = a[length(a)]
+              sub(/:[0-9]+:/, "", filename) # Remove line number from filename
+              print "| " filename " | " $2 " | " $3 " |"
+            }
+            $1 == "total:" {
+              print "\n**Total Coverage:** " $3
+            }
+          ' coverage.txt >> $GITHUB_STEP_SUMMARY
 
   lint:
     name: Lint
