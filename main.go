@@ -3,31 +3,47 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 )
 
-func main() {
-	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Developer Help Tool CLI\n\n")
-		fmt.Fprintf(os.Stderr, "Usage:\n")
-		fmt.Fprintf(os.Stderr, "  %s [command]\n\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "Available Commands:\n")
-		fmt.Fprintf(os.Stderr, "  (Currently no commands are available)\n\n")
-		fmt.Fprintf(os.Stderr, "Flags:\n")
-		flag.PrintDefaults()
+func run(args []string, outStream, errStream io.Writer) int {
+	flags := flag.NewFlagSet(args[0], flag.ContinueOnError)
+	flags.SetOutput(errStream)
+
+	flags.Usage = func() {
+		fmt.Fprintf(errStream, "Developer Help Tool CLI\n\n")
+		fmt.Fprintf(errStream, "Usage:\n")
+		fmt.Fprintf(errStream, "  %s [command]\n\n", args[0])
+		fmt.Fprintf(errStream, "Available Commands:\n")
+		fmt.Fprintf(errStream, "  (Currently no commands are available)\n\n")
+		fmt.Fprintf(errStream, "Flags:\n")
+		flags.PrintDefaults()
 	}
 
-	flag.Parse()
-
-	if len(os.Args) == 1 {
-		flag.Usage()
-		os.Exit(0)
+	err := flags.Parse(args[1:])
+	if err != nil {
+		if err == flag.ErrHelp {
+			return 0
+		}
+		return 1
 	}
 
-	command := flag.Arg(0)
+	if len(flags.Args()) == 0 {
+		flags.Usage()
+		return 0
+	}
+
+	command := flags.Arg(0)
 	if command != "" {
-		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
-		flag.Usage()
-		os.Exit(1)
+		fmt.Fprintf(errStream, "Unknown command: %s\n", command)
+		flags.Usage()
+		return 1
 	}
+
+	return 0
+}
+
+func main() {
+	os.Exit(run(os.Args, os.Stdout, os.Stderr))
 }
