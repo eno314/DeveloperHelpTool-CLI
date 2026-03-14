@@ -16,9 +16,14 @@ func run(args []string, outStream, errStream io.Writer) int {
 		fmt.Fprintf(errStream, "Usage:\n")
 		fmt.Fprintf(errStream, "  %s [command]\n\n", args[0])
 		fmt.Fprintf(errStream, "Available Commands:\n")
-		fmt.Fprintf(errStream, "  (Currently no commands are available)\n\n")
+		fmt.Fprintf(errStream, "  amidakuji   Generate an Amidakuji (Ghost Leg) lottery\n\n")
 		fmt.Fprintf(errStream, "Flags:\n")
 		flags.PrintDefaults()
+	}
+
+	if len(args) < 2 {
+		flags.Usage()
+		return 0
 	}
 
 	err := flags.Parse(args[1:])
@@ -29,19 +34,18 @@ func run(args []string, outStream, errStream io.Writer) int {
 		return 1
 	}
 
-	if len(flags.Args()) == 0 {
+	command := args[1]
+	switch command {
+	case "amidakuji":
+		return runAmidakuji(args[2:], outStream, errStream)
+	case "-h", "--help":
 		flags.Usage()
 		return 0
-	}
-
-	command := flags.Arg(0)
-	if command != "" {
+	default:
 		fmt.Fprintf(errStream, "Unknown command: %s\n", command)
 		flags.Usage()
 		return 1
 	}
-
-	return 0
 }
 
 func main() {
