@@ -52,60 +52,60 @@ func TestRunHttpDiff(t *testing.T) {
 	defer server2.Close()
 
 	tests := []struct {
-		name          string
-		args          []string
-		expectedCode  int
-		expectedOut   string
-		expectedErr   string
+		name         string
+		args         []string
+		expectedCode int
+		expectedOut  string
+		expectedErr  string
 	}{
 		{
-			name: "Help flag",
-			args: []string{"httpdiff", "--help"},
+			name:         "Help flag",
+			args:         []string{"httpdiff", "--help"},
 			expectedCode: 0,
-			expectedOut: "",
-			expectedErr: "Usage of httpdiff:\n", // Will check for presence
+			expectedOut:  "",
+			expectedErr:  "Usage of httpdiff:\n", // Will check for presence
 		},
 		{
-			name: "Missing flags",
-			args: []string{"httpdiff", "--host1", server1.URL},
+			name:         "Missing flags",
+			args:         []string{"httpdiff", "--host1", server1.URL},
 			expectedCode: 1,
-			expectedOut: "",
-			expectedErr: "Error: --host1, --host2, and --paths are required\n", // Prefix check
+			expectedOut:  "",
+			expectedErr:  "Error: --host1, --host2, and --paths are required\n", // Prefix check
 		},
 		{
-			name: "Same response",
-			args: []string{"httpdiff", "--host1", server1.URL, "--host2", server2.URL, "--paths", "/same"},
+			name:         "Same response",
+			args:         []string{"httpdiff", "--host1", server1.URL, "--host2", server2.URL, "--paths", "/same"},
 			expectedCode: 0,
-			expectedOut: "Comparing " + server1.URL + "/same vs " + server2.URL + "/same\nNo differences found.\n--------------------------------------------------\n",
-			expectedErr: "",
+			expectedOut:  "Comparing " + server1.URL + "/same vs " + server2.URL + "/same\nNo differences found.\n--------------------------------------------------\n",
+			expectedErr:  "",
 		},
 		{
-			name: "Different response",
-			args: []string{"httpdiff", "--host1", server1.URL, "--host2", server2.URL, "--paths", "/diff"},
+			name:         "Different response",
+			args:         []string{"httpdiff", "--host1", server1.URL, "--host2", server2.URL, "--paths", "/diff"},
 			expectedCode: 0,
-			expectedOut: "Differences found:\n", // Just check prefix/presence
-			expectedErr: "",
+			expectedOut:  "Differences found:\n", // Just check prefix/presence
+			expectedErr:  "",
 		},
 		{
-			name: "Different status",
-			args: []string{"httpdiff", "--host1", server1.URL, "--host2", server2.URL, "--paths", "/status"},
+			name:         "Different status",
+			args:         []string{"httpdiff", "--host1", server1.URL, "--host2", server2.URL, "--paths", "/status"},
 			expectedCode: 0,
-			expectedOut: "Warning: Status codes differ. host1: 200, host2: 404\n",
-			expectedErr: "",
+			expectedOut:  "Warning: Status codes differ. host1: 200, host2: 404\n",
+			expectedErr:  "",
 		},
 		{
-			name: "Multiple paths",
-			args: []string{"httpdiff", "--host1", server1.URL, "--host2", server2.URL, "--paths", "/same,/diff"},
+			name:         "Multiple paths",
+			args:         []string{"httpdiff", "--host1", server1.URL, "--host2", server2.URL, "--paths", "/same,/diff"},
 			expectedCode: 0,
-			expectedOut: "No differences found", // Check it contains this
-			expectedErr: "",
+			expectedOut:  "No differences found", // Check it contains this
+			expectedErr:  "",
 		},
 		{
-			name: "Invalid URL error",
-			args: []string{"httpdiff", "--host1", "http://invalid-host-that-does-not-exist", "--host2", server2.URL, "--paths", "/same"},
+			name:         "Invalid URL error",
+			args:         []string{"httpdiff", "--host1", "http://invalid-host-that-does-not-exist", "--host2", server2.URL, "--paths", "/same"},
 			expectedCode: 1, // Has errors
-			expectedOut: "Comparing",
-			expectedErr: "Error requesting",
+			expectedOut:  "Comparing",
+			expectedErr:  "Error requesting",
 		},
 	}
 
