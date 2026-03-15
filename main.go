@@ -16,7 +16,8 @@ func run(args []string, outStream, errStream io.Writer) int {
 		fmt.Fprintf(errStream, "Usage:\n")
 		fmt.Fprintf(errStream, "  %s [command]\n\n", args[0])
 		fmt.Fprintf(errStream, "Available Commands:\n")
-		fmt.Fprintf(errStream, "  amidakuji   Generate an Amidakuji (Ghost Leg) lottery\n\n")
+		fmt.Fprintf(errStream, "  amidakuji   Generate an Amidakuji (Ghost Leg) lottery\n")
+		fmt.Fprintf(errStream, "  httpdiff    Compare HTTP responses from two hosts\n\n")
 		fmt.Fprintf(errStream, "Flags:\n")
 		flags.PrintDefaults()
 	}
@@ -38,6 +39,8 @@ func run(args []string, outStream, errStream io.Writer) int {
 	switch command {
 	case "amidakuji":
 		return runAmidakuji(args[2:], outStream, errStream)
+	case "httpdiff":
+		return runHttpDiff(args[2:], outStream, errStream)
 	case "-h", "--help":
 		flags.Usage()
 		return 0
