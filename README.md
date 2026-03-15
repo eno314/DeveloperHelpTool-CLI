@@ -5,6 +5,7 @@ Welcome to the Developer Help Tool CLI! This tool is designed to help developers
 ## Features
 
 - **Amidakuji (Ghost Leg) Lottery**: Create a random lottery to assign goals to participants quickly and fairly.
+- **HTTP Diff**: Compare HTTP responses from two different hosts to easily find differences between environments.
 
 ## Installation
 
@@ -21,6 +22,34 @@ sudo mv developer-help-tool-cli-darwin-arm64 /usr/local/bin/developer-help-tool-
 ## Usage
 
 Currently, the tool has one main command: `amidakuji`.
+
+### HTTP Diff
+
+Use this command to compare the HTTP response bodies of two different hosts. It requests the same paths on both hosts and shows you what is different. It will also warn you if the status codes (like 200 OK or 404 Not Found) are not the same.
+
+**Command:**
+
+```bash
+developer-help-tool-cli httpdiff --host1 https://api-staging.example.com --host2 https://api-prod.example.com --paths /users,/posts
+```
+
+**Example Output:**
+
+```
+Comparing https://api-staging.example.com/users vs https://api-prod.example.com/users
+Differences found:
+  {
+-   "version": "v1.1",
++   "version": "v1.0",
+    "users": []
+  }
+--------------------------------------------------
+Comparing https://api-staging.example.com/posts vs https://api-prod.example.com/posts
+Warning: Status codes differ. host1: 200, host2: 404
+Differences found:
+...
+--------------------------------------------------
+```
 
 ### Amidakuji
 
