@@ -14,9 +14,23 @@ if [ "$OS" != "Darwin" ] || [ "$ARCH" != "arm64" ]; then
 fi
 
 # Configuration
-BINARY_URL="https://github.com/eno314/developer-help-tool-cli/releases/latest/download/developer-help-tool-cli-darwin-arm64"
 INSTALL_DIR="/usr/local/bin"
 BINARY_NAME="developer-help-tool-cli"
+
+# Determine version (default to latest)
+VERSION=${1:-latest}
+
+if [ "$VERSION" = "latest" ]; then
+    BINARY_URL="https://github.com/eno314/developer-help-tool-cli/releases/latest/download/developer-help-tool-cli-darwin-arm64"
+    echo "Downloading $BINARY_NAME (latest release) for macOS arm64..."
+else
+    # Ensure version starts with 'v' if it's a typical semver
+    if [[ ! "$VERSION" =~ ^v ]]; then
+        VERSION="v$VERSION"
+    fi
+    BINARY_URL="https://github.com/eno314/developer-help-tool-cli/releases/download/$VERSION/developer-help-tool-cli-darwin-arm64"
+    echo "Downloading $BINARY_NAME (version $VERSION) for macOS arm64..."
+fi
 
 # Check if we have write permission to INSTALL_DIR
 if [ ! -w "$INSTALL_DIR" ]; then
@@ -26,8 +40,6 @@ if [ ! -w "$INSTALL_DIR" ]; then
     exit 1
 fi
 
-echo "Downloading $BINARY_NAME for macOS arm64..."
-
 # Create a temporary file
 TMP_FILE=$(mktemp)
 
@@ -35,7 +47,7 @@ TMP_FILE=$(mktemp)
 if command -v wget >/dev/null 2>&1; then
     wget -qO "$TMP_FILE" "$BINARY_URL"
 elif command -v curl >/dev/null 2>&1; then
-    curl -sL -o "$TMP_FILE" "$BINARY_URL"
+    curl -sLf -o "$TMP_FILE" "$BINARY_URL"
 else
     echo "Error: wget or curl is required to download the binary."
     rm -f "$TMP_FILE"

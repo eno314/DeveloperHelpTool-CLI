@@ -22,7 +22,21 @@ Alternatively, if you prefer `curl`:
 curl -sL https://raw.githubusercontent.com/eno314/developer-help-tool-cli/main/install.sh | sudo bash
 ```
 
-*(Note: You can check the [Releases](https://github.com/eno314/developer-help-tool-cli/releases) page for more details on available binaries.)*
+### Installing a Specific Release Version
+
+By default, the script installs the `latest` release. If you need to install a specific released version, you can pass the version string as an argument to the script. Only official release versions (e.g., `v1.0.0`) are supported.
+
+Using `wget`:
+```bash
+wget -qO- https://raw.githubusercontent.com/eno314/developer-help-tool-cli/main/install.sh | sudo bash -s -- v1.0.0
+```
+
+Using `curl`:
+```bash
+curl -sL https://raw.githubusercontent.com/eno314/developer-help-tool-cli/main/install.sh | sudo bash -s -- v1.0.0
+```
+
+*(Note: You can check the [Releases](https://github.com/eno314/developer-help-tool-cli/releases) page for more details on available binaries and versions.)*
 
 ## Usage
 
