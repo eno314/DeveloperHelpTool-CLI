@@ -1,4 +1,4 @@
-package main
+package features
 
 import (
 	"flag"
@@ -11,7 +11,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func runHttpDiff(args []string, outStream, errStream io.Writer) int {
+func RunHttpDiff(args []string, outStream, errStream io.Writer) int {
 	flags := flag.NewFlagSet("httpdiff", flag.ContinueOnError)
 	flags.SetOutput(errStream)
 

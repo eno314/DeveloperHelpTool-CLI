@@ -1,4 +1,4 @@
-package main
+package features
 
 import (
 	"flag"
@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func runAmidakuji(args []string, outStream, errStream io.Writer) int {
+func RunAmidakuji(args []string, outStream, errStream io.Writer) int {
 	flags := flag.NewFlagSet("amidakuji", flag.ContinueOnError)
 	flags.SetOutput(errStream)
 

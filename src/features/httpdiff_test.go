@@ -1,4 +1,4 @@
-package main
+package features
 
 import (
 	"bytes"
@@ -114,7 +114,7 @@ func TestRunHttpDiff(t *testing.T) {
 			outBuf := new(bytes.Buffer)
 			errBuf := new(bytes.Buffer)
 
-			code := runHttpDiff(tt.args[1:], outBuf, errBuf) // drop the "httpdiff" command name as `args` usually does in `main` after switch
+			code := RunHttpDiff(tt.args[1:], outBuf, errBuf) // drop the "httpdiff" command name as `args` usually does in `main` after switch
 
 			if code != tt.expectedCode {
 				t.Errorf("expected exit code %d, got %d", tt.expectedCode, code)
