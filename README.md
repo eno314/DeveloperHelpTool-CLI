@@ -9,15 +9,20 @@ Welcome to the Developer Help Tool CLI! This tool is designed to help developers
 
 ## Installation
 
-You can download the latest version for macOS (Apple Silicon / arm64) using `wget`. Open your terminal and run:
+**Note: Currently, only macOS (Apple Silicon / arm64) is supported.**
+
+You can install the latest version for macOS using the provided installation script with `wget` or `curl`. Since the script installs the binary to `/usr/local/bin`, you will need to run it with `sudo`. Open your terminal and run:
 
 ```bash
-wget https://github.com/eno314/developer-help-tool-cli/releases/latest/download/developer-help-tool-cli-darwin-arm64
-chmod +x developer-help-tool-cli-darwin-arm64
-sudo mv developer-help-tool-cli-darwin-arm64 /usr/local/bin/developer-help-tool-cli
+wget -qO- https://raw.githubusercontent.com/eno314/developer-help-tool-cli/main/install.sh | sudo bash
 ```
 
-*(Note: The binary name might change depending on the release. Please check the [Releases](https://github.com/eno314/developer-help-tool-cli/releases) page for the exact URL.)*
+Alternatively, if you prefer `curl`:
+```bash
+curl -sL https://raw.githubusercontent.com/eno314/developer-help-tool-cli/main/install.sh | sudo bash
+```
+
+*(Note: You can check the [Releases](https://github.com/eno314/developer-help-tool-cli/releases) page for more details on available binaries.)*
 
 ## Usage
 
