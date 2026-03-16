@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/eno314/developer-help-tool-cli/src/features"
 )
 
 func run(args []string, outStream, errStream io.Writer) int {
@@ -38,9 +40,9 @@ func run(args []string, outStream, errStream io.Writer) int {
 	command := args[1]
 	switch command {
 	case "amidakuji":
-		return runAmidakuji(args[2:], outStream, errStream)
+		return features.RunAmidakuji(args[2:], outStream, errStream)
 	case "httpdiff":
-		return runHttpDiff(args[2:], outStream, errStream)
+		return features.RunHttpDiff(args[2:], outStream, errStream)
 	case "-h", "--help":
 		flags.Usage()
 		return 0

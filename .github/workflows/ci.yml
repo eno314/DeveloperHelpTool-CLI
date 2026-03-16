@@ -86,7 +86,7 @@ jobs:
         env:
           GOOS: darwin
           GOARCH: arm64
-        run: go build -v -o developer-help-tool-cli .
+        run: go build -v -o developer-help-tool-cli ./src
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
