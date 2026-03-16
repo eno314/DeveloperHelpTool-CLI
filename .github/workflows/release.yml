@@ -27,7 +27,7 @@ jobs:
           GOARCH: arm64
         run: |
           BINARY_NAME="developer-help-tool-cli-${{ github.ref_name }}-darwin-arm64"
-          go build -v -o $BINARY_NAME .
+          go build -v -o $BINARY_NAME ./src
           echo "BINARY_NAME=$BINARY_NAME" >> $GITHUB_ENV
 
       - name: Upload Artifact
