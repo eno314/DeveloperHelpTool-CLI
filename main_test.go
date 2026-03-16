@@ -17,19 +17,19 @@ func TestRun(t *testing.T) {
 			name:           "No arguments",
 			args:           []string{"developer-help-tool-cli"},
 			expectedStatus: 0,
-			expectedOutput: "Developer Help Tool CLI\n\nUsage:\n  developer-help-tool-cli [command]\n\nAvailable Commands:\n  amidakuji   Generate an Amidakuji (Ghost Leg) lottery\n\nFlags:\n",
+			expectedOutput: "Developer Help Tool CLI\n\nUsage:\n  developer-help-tool-cli [command]\n\nAvailable Commands:\n  amidakuji   Generate an Amidakuji (Ghost Leg) lottery\n  httpdiff    Compare HTTP responses from two hosts\n\nFlags:\n",
 		},
 		{
 			name:           "Help flag (-h)",
 			args:           []string{"developer-help-tool-cli", "-h"},
 			expectedStatus: 0,
-			expectedOutput: "Developer Help Tool CLI\n\nUsage:\n  developer-help-tool-cli [command]\n\nAvailable Commands:\n  amidakuji   Generate an Amidakuji (Ghost Leg) lottery\n\nFlags:\n",
+			expectedOutput: "Developer Help Tool CLI\n\nUsage:\n  developer-help-tool-cli [command]\n\nAvailable Commands:\n  amidakuji   Generate an Amidakuji (Ghost Leg) lottery\n  httpdiff    Compare HTTP responses from two hosts\n\nFlags:\n",
 		},
 		{
 			name:           "Unknown command",
 			args:           []string{"developer-help-tool-cli", "unknown"},
 			expectedStatus: 1,
-			expectedOutput: "Unknown command: unknown\nDeveloper Help Tool CLI\n\nUsage:\n  developer-help-tool-cli [command]\n\nAvailable Commands:\n  amidakuji   Generate an Amidakuji (Ghost Leg) lottery\n\nFlags:\n",
+			expectedOutput: "Unknown command: unknown\nDeveloper Help Tool CLI\n\nUsage:\n  developer-help-tool-cli [command]\n\nAvailable Commands:\n  amidakuji   Generate an Amidakuji (Ghost Leg) lottery\n  httpdiff    Compare HTTP responses from two hosts\n\nFlags:\n",
 		},
 		{
 			name:           "amidakuji without args",
