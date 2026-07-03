@@ -1,11 +1,13 @@
 package features
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/google/go-cmp/cmp"
@@ -16,9 +18,16 @@ func RunHttpDiff(args []string, outStream, errStream io.Writer) int {
 	flags.SetOutput(errStream)
 
 	var host1, host2, pathsStr string
+	var method, body, bodyFile string
+	var headers headersValue
+
 	flags.StringVar(&host1, "host1", "", "First host URL (e.g., http://example.com)")
 	flags.StringVar(&host2, "host2", "", "Second host URL (e.g., http://example.org)")
 	flags.StringVar(&pathsStr, "paths", "", "Comma-separated list of paths (e.g., /api/v1/users,/api/v1/posts)")
+	flags.StringVar(&method, "method", "GET", "HTTP method (e.g., GET, POST)")
+	flags.StringVar(&body, "body", "", "HTTP request body string")
+	flags.StringVar(&bodyFile, "body-file", "", "Path to file containing HTTP request body")
+	flags.Var(&headers, "header", "Custom HTTP request header (can be specified multiple times, e.g. -header 'Name: Value')")
 
 	flags.Usage = func() {
 		fmt.Fprintf(errStream, "Usage of httpdiff:\n")
@@ -37,6 +46,32 @@ func RunHttpDiff(args []string, outStream, errStream io.Writer) int {
 		flags.Usage()
 		return 1
 	}
+
+	if body != "" && bodyFile != "" {
+		fmt.Fprintln(errStream, "Error: cannot specify both --body and --body-file")
+		return 1
+	}
+
+	for _, h := range headers {
+		if !strings.Contains(h, ":") {
+			fmt.Fprintf(errStream, "Error: invalid header format: %s\n", h)
+			return 1
+		}
+	}
+
+	var bodyBytes []byte
+	if bodyFile != "" {
+		var err error
+		bodyBytes, err = os.ReadFile(bodyFile)
+		if err != nil {
+			fmt.Fprintf(errStream, "Error reading body file: %v\n", err)
+			return 1
+		}
+	} else if body != "" {
+		bodyBytes = []byte(body)
+	}
+
+	method = strings.ToUpper(method)
 
 	paths := strings.Split(pathsStr, ",")
 	client := &http.Client{}
@@ -64,14 +99,14 @@ func RunHttpDiff(args []string, outStream, errStream io.Writer) int {
 
 		fmt.Fprintf(outStream, "Comparing %s vs %s\n", u1, u2)
 
-		resp1, body1, err := doRequest(client, u1)
+		resp1, body1, err := doRequest(client, u1, method, bodyBytes, headers)
 		if err != nil {
 			fmt.Fprintf(errStream, "Error requesting %s: %v\n", u1, err)
 			hasErrors = true
 			continue
 		}
 
-		resp2, body2, err := doRequest(client, u2)
+		resp2, body2, err := doRequest(client, u2, method, bodyBytes, headers)
 		if err != nil {
 			fmt.Fprintf(errStream, "Error requesting %s: %v\n", u2, err)
 			hasErrors = true
@@ -97,22 +132,45 @@ func RunHttpDiff(args []string, outStream, errStream io.Writer) int {
 	return 0
 }
 
-func doRequest(client *http.Client, url string) (*http.Response, string, error) {
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+func doRequest(client *http.Client, urlStr string, method string, body []byte, headers []string) (*http.Response, string, error) {
+	var bodyReader io.Reader
+	if len(body) > 0 {
+		bodyReader = bytes.NewReader(body)
+	}
+
+	req, err := http.NewRequest(method, urlStr, bodyReader)
 	if err != nil {
-		return nil, "", fmt.Errorf("creating request for %s: %w", url, err)
+		return nil, "", fmt.Errorf("creating request for %s: %w", urlStr, err)
+	}
+
+	for _, h := range headers {
+		parts := strings.SplitN(h, ":", 2)
+		if len(parts) == 2 {
+			req.Header.Add(strings.TrimSpace(parts[0]), strings.TrimSpace(parts[1]))
+		}
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, "", fmt.Errorf("executing request to %s: %w", url, err)
+		return nil, "", fmt.Errorf("executing request to %s: %w", urlStr, err)
 	}
 	defer resp.Body.Close()
 
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, "", fmt.Errorf("reading response body from %s: %w", url, err)
+		return nil, "", fmt.Errorf("reading response body from %s: %w", urlStr, err)
 	}
 
 	return resp, string(bodyBytes), nil
+}
+
+type headersValue []string
+
+func (h *headersValue) String() string {
+	return strings.Join(*h, ", ")
+}
+
+func (h *headersValue) Set(value string) error {
+	*h = append(*h, value)
+	return nil
 }
