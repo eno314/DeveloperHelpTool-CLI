@@ -14,12 +14,12 @@ Welcome to the Developer Help Tool CLI! This tool is designed to help developers
 You can install the latest version for macOS using the provided installation script with `wget` or `curl`. Since the script installs the binary to `/usr/local/bin`, you will need to run it with `sudo`. Open your terminal and run:
 
 ```bash
-wget -qO- https://raw.githubusercontent.com/eno314/developer-help-tool-cli/main/install.sh | sudo bash
+wget -qO- https://raw.githubusercontent.com/eno314/DeveloperHelpTool-CLI/main/install.sh | sudo bash
 ```
 
 Alternatively, if you prefer `curl`:
 ```bash
-curl -sL https://raw.githubusercontent.com/eno314/developer-help-tool-cli/main/install.sh | sudo bash
+curl -sL https://raw.githubusercontent.com/eno314/DeveloperHelpTool-CLI/main/install.sh | sudo bash
 ```
 
 ### Installing a Specific Release Version
@@ -28,15 +28,15 @@ By default, the script installs the `latest` release. If you need to install a s
 
 Using `wget`:
 ```bash
-wget -qO- https://raw.githubusercontent.com/eno314/developer-help-tool-cli/main/install.sh | sudo bash -s -- v1.0.0
+wget -qO- https://raw.githubusercontent.com/eno314/DeveloperHelpTool-CLI/main/install.sh | sudo bash -s -- v1.0.0
 ```
 
 Using `curl`:
 ```bash
-curl -sL https://raw.githubusercontent.com/eno314/developer-help-tool-cli/main/install.sh | sudo bash -s -- v1.0.0
+curl -sL https://raw.githubusercontent.com/eno314/DeveloperHelpTool-CLI/main/install.sh | sudo bash -s -- v1.0.0
 ```
 
-*(Note: You can check the [Releases](https://github.com/eno314/developer-help-tool-cli/releases) page for more details on available binaries and versions.)*
+*(Note: You can check the [Releases](https://github.com/eno314/DeveloperHelpTool-CLI/releases) page for more details on available binaries and versions.)*
 
 ## Usage
 

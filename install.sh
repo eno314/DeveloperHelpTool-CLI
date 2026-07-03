@@ -21,14 +21,14 @@ BINARY_NAME="developer-help-tool-cli"
 VERSION=${1:-latest}
 
 if [ "$VERSION" = "latest" ]; then
-    BINARY_URL="https://github.com/eno314/developer-help-tool-cli/releases/latest/download/developer-help-tool-cli-darwin-arm64"
+    BINARY_URL="https://github.com/eno314/DeveloperHelpTool-CLI/releases/latest/download/developer-help-tool-cli-darwin-arm64"
     echo "Downloading $BINARY_NAME (latest release) for macOS arm64..."
 else
     # Ensure version starts with 'v' if it's a typical semver
     if [[ ! "$VERSION" =~ ^v ]]; then
         VERSION="v$VERSION"
     fi
-    BINARY_URL="https://github.com/eno314/developer-help-tool-cli/releases/download/$VERSION/developer-help-tool-cli-darwin-arm64"
+    BINARY_URL="https://github.com/eno314/DeveloperHelpTool-CLI/releases/download/$VERSION/developer-help-tool-cli-darwin-arm64"
     echo "Downloading $BINARY_NAME (version $VERSION) for macOS arm64..."
 fi
 
@@ -36,7 +36,7 @@ fi
 if [ ! -w "$INSTALL_DIR" ]; then
     echo "Error: No write permission to $INSTALL_DIR."
     echo "Please run this script with sudo, e.g.:"
-    echo "wget -qO- https://raw.githubusercontent.com/eno314/developer-help-tool-cli/main/install.sh | sudo bash"
+    echo "wget -qO- https://raw.githubusercontent.com/eno314/DeveloperHelpTool-CLI/main/install.sh | sudo bash"
     exit 1
 fi
 
@@ -47,7 +47,7 @@ TMP_FILE=$(mktemp)
 if command -v wget >/dev/null 2>&1; then
     wget -qO "$TMP_FILE" "$BINARY_URL"
 elif command -v curl >/dev/null 2>&1; then
-    curl -sLf -o "$TMP_FILE" "$BINARY_URL"
+    curl -sLfL -o "$TMP_FILE" "$BINARY_URL"
 else
     echo "Error: wget or curl is required to download the binary."
     rm -f "$TMP_FILE"
