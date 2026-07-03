@@ -2,6 +2,7 @@ package features
 
 import (
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -13,6 +14,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+var errMissingFlags = errors.New("--host1, --host2, and --paths are required")
+
 type httpDiffConfig struct {
 	host1     string
 	host2     string
@@ -22,27 +25,19 @@ type httpDiffConfig struct {
 	headers   headersValue
 }
 
+type httpDiffOptions struct {
+	host1    string
+	host2    string
+	pathsStr string
+	method   string
+	body     string
+	bodyFile string
+	headers  headersValue
+}
+
 // RunHttpDiff is the entry point for the httpdiff command.
 func RunHttpDiff(args []string, outStream, errStream io.Writer) int {
-	var host1, host2, pathsStr string
-	var method, body, bodyFile string
-	var headers headersValue
-
-	flags := flag.NewFlagSet("httpdiff", flag.ContinueOnError)
-	flags.SetOutput(errStream)
-
-	flags.StringVar(&host1, "host1", "", "First host URL (e.g., http://example.com)")
-	flags.StringVar(&host2, "host2", "", "Second host URL (e.g., http://example.org)")
-	flags.StringVar(&pathsStr, "paths", "", "Comma-separated list of paths (e.g., /api/v1/users,/api/v1/posts)")
-	flags.StringVar(&method, "method", "GET", "HTTP method (e.g., GET, POST)")
-	flags.StringVar(&body, "body", "", "HTTP request body string")
-	flags.StringVar(&bodyFile, "body-file", "", "Path to file containing HTTP request body")
-	flags.Var(&headers, "header", "Custom HTTP request header (can be specified multiple times, e.g. -header 'Name: Value')")
-
-	flags.Usage = func() {
-		fmt.Fprintf(errStream, "Usage of httpdiff:\n")
-		flags.PrintDefaults()
-	}
+	flags, opts := newFlagSet(errStream)
 
 	if err := flags.Parse(args); err != nil {
 		if err == flag.ErrHelp {
@@ -51,15 +46,12 @@ func RunHttpDiff(args []string, outStream, errStream io.Writer) int {
 		return 1
 	}
 
-	if host1 == "" || host2 == "" || pathsStr == "" {
-		fmt.Fprintln(errStream, "Error: --host1, --host2, and --paths are required")
-		flags.Usage()
-		return 1
-	}
-
-	cfg, err := newHttpDiffConfig(host1, host2, pathsStr, method, body, bodyFile, headers)
+	cfg, err := newHttpDiffConfig(opts)
 	if err != nil {
 		fmt.Fprintf(errStream, "Error: %v\n", err)
+		if err == errMissingFlags {
+			flags.Usage()
+		}
 		return 1
 	}
 
@@ -78,30 +70,55 @@ func RunHttpDiff(args []string, outStream, errStream io.Writer) int {
 	return 0
 }
 
-func newHttpDiffConfig(host1, host2, pathsStr, method, body, bodyFile string, headers headersValue) (*httpDiffConfig, error) {
-	if body != "" && bodyFile != "" {
+func newFlagSet(errStream io.Writer) (*flag.FlagSet, *httpDiffOptions) {
+	opts := &httpDiffOptions{}
+	flags := flag.NewFlagSet("httpdiff", flag.ContinueOnError)
+	flags.SetOutput(errStream)
+
+	flags.StringVar(&opts.host1, "host1", "", "First host URL (e.g., http://example.com)")
+	flags.StringVar(&opts.host2, "host2", "", "Second host URL (e.g., http://example.org)")
+	flags.StringVar(&opts.pathsStr, "paths", "", "Comma-separated list of paths (e.g., /api/v1/users,/api/v1/posts)")
+	flags.StringVar(&opts.method, "method", "GET", "HTTP method (e.g., GET, POST)")
+	flags.StringVar(&opts.body, "body", "", "HTTP request body string")
+	flags.StringVar(&opts.bodyFile, "body-file", "", "Path to file containing HTTP request body")
+	flags.Var(&opts.headers, "header", "Custom HTTP request header (can be specified multiple times, e.g. -header 'Name: Value')")
+
+	flags.Usage = func() {
+		fmt.Fprintf(errStream, "Usage of httpdiff:\n")
+		flags.PrintDefaults()
+	}
+
+	return flags, opts
+}
+
+func newHttpDiffConfig(opts *httpDiffOptions) (*httpDiffConfig, error) {
+	if opts.host1 == "" || opts.host2 == "" || opts.pathsStr == "" {
+		return nil, errMissingFlags
+	}
+
+	if opts.body != "" && opts.bodyFile != "" {
 		return nil, fmt.Errorf("cannot specify both --body and --body-file")
 	}
 
-	for _, h := range headers {
+	for _, h := range opts.headers {
 		if !strings.Contains(h, ":") {
 			return nil, fmt.Errorf("invalid header format: %s", h)
 		}
 	}
 
 	var bodyBytes []byte
-	if bodyFile != "" {
-		b, err := os.ReadFile(bodyFile)
+	if opts.bodyFile != "" {
+		b, err := os.ReadFile(opts.bodyFile)
 		if err != nil {
 			return nil, fmt.Errorf("reading body file: %w", err)
 		}
 		bodyBytes = b
-	} else if body != "" {
-		bodyBytes = []byte(body)
+	} else if opts.body != "" {
+		bodyBytes = []byte(opts.body)
 	}
 
 	var paths []string
-	for _, p := range strings.Split(pathsStr, ",") {
+	for _, p := range strings.Split(opts.pathsStr, ",") {
 		p = strings.TrimSpace(p)
 		if p != "" {
 			paths = append(paths, p)
@@ -109,12 +126,12 @@ func newHttpDiffConfig(host1, host2, pathsStr, method, body, bodyFile string, he
 	}
 
 	return &httpDiffConfig{
-		host1:     host1,
-		host2:     host2,
+		host1:     opts.host1,
+		host2:     opts.host2,
 		paths:     paths,
-		method:    strings.ToUpper(method),
+		method:    strings.ToUpper(opts.method),
 		bodyBytes: bodyBytes,
-		headers:   headers,
+		headers:   opts.headers,
 	}, nil
 }
 
