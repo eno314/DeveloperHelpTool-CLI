@@ -209,6 +209,7 @@ func RunAmidakuji(args []string, out, err io.Writer) int {
   }
   ```
 - **Classify errors.** Distinguish user-caused errors (invalid arguments) from system errors (network failures) and keep the mapping to exit codes (`0` or `1`) simple.
+- **Return validation failures as errors.** Do not print error messages or handle exit codes inside helper or validation functions. Instead, return a standard Go `error` to the caller (e.g., the main entry point), letting the caller decide how to format the output and dictate the program flow.
 
 ---
 
@@ -222,19 +223,28 @@ func RunAmidakuji(args []string, out, err io.Writer) int {
 
 ---
 
+## 7. Function Organization and Single Responsibility
+
+**Principle: Organize files top-down and ensure each function has a single, clear purpose.**
+
+- **Top-Down Ordering:** Place the most important, public functions (like CLI entry points, e.g., `RunHttpDiff`) at the top of the file. Place the private helper functions they call directly below them. This allows readers to understand the high-level flow before diving into the implementation details.
+- **Single Responsibility & Naming:** A function should do exactly one thing. If you find yourself adding "And" to a function name (e.g., `parseAndValidateFlags`), it is a strong signal that the function violates the Single Responsibility Principle. Split such functions into distinct operations (e.g., flag parsing as one step, and configuration validation/building as another).
+
+---
+
 ## Priority Order
 
 When guidelines conflict, apply them in this order:
 
 1. **Correct** — free of bugs
-2. **Readable** — the next reader understands the intent
+2. **Readable** — the next reader understands the intent (single responsibility, top-down order)
 3. **Testable** — pure functions, localized side effects
 4. **Malleable** — data-driven, dependency injection
 5. **Minimal dependencies** — fewest external libraries
 
 ---
 
-## 7. Code Review and Quality Gates
+## 8. Code Review and Quality Gates
 
 **Principle: Every implementation must be reviewed using the `code-review-and-quality` skill.**
 
