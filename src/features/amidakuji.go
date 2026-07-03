@@ -48,7 +48,6 @@ func RunAmidakuji(args []string, outStream, errStream io.Writer) int {
 		return 1
 	}
 
-	// Make sure no empty names exist and no duplicates exist
 	seenParticipants := make(map[string]bool)
 	for i, p := range participants {
 		participants[i] = strings.TrimSpace(p)
@@ -70,14 +69,15 @@ func RunAmidakuji(args []string, outStream, errStream io.Writer) int {
 		}
 	}
 
-	board := generateAmidakujiBoard(len(participants))
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	board := generateAmidakujiBoard(len(participants), r)
 	results := evaluateAmidakuji(board, participants, goals)
 	renderAmidakuji(outStream, board, participants, goals, results)
 
 	return 0
 }
 
-func generateAmidakujiBoard(numParticipants int) [][]bool {
+func generateAmidakujiBoard(numParticipants int, r *rand.Rand) [][]bool {
 	// Let's create a board with enough horizontal steps to make it random.
 	// For N participants, maybe max(10, N*2)
 	steps := numParticipants * 2
@@ -85,18 +85,12 @@ func generateAmidakujiBoard(numParticipants int) [][]bool {
 		steps = 10
 	}
 
-	// board[step][line] represents whether there's a horizontal line connecting
-	// vertical line `line` and `line+1` at horizontal step `step`.
 	board := make([][]bool, steps)
 	for s := 0; s < steps; s++ {
 		board[s] = make([]bool, numParticipants-1)
 	}
 
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-
 	for s := 0; s < steps; s++ {
-		// Place a horizontal line randomly. Ensure no two adjacent horizontal lines
-		// at the same step.
 		for l := 0; l < numParticipants-1; l++ {
 			// Probability of adding a horizontal line is roughly 30-40%
 			if r.Intn(3) == 0 {
@@ -117,11 +111,9 @@ func evaluateAmidakuji(board [][]bool, participants []string, goals []string) ma
 	for pIdx, participant := range participants {
 		currentLine := pIdx
 		for _, row := range board {
-			// Check left
 			if currentLine > 0 && row[currentLine-1] {
 				currentLine--
 			} else if currentLine < len(participants)-1 && row[currentLine] {
-				// Check right
 				currentLine++
 			}
 		}
@@ -152,34 +144,26 @@ func renderAmidakuji(outStream io.Writer, board [][]bool, participants []string,
 
 	colWidth := maxLen + 2
 
-	// Render participants
 	for _, p := range participants {
 		fmt.Fprintf(outStream, "%-*s", colWidth, fmt.Sprintf(" %s", p))
 	}
 	fmt.Fprintf(outStream, "\n")
 
-	// Helper func to center the vertical lines
 	paddingLeft := (colWidth / 2)
 	paddingRight := colWidth - paddingLeft - 1
 
-	// Render top vertical lines before the board
 	for range participants {
 		fmt.Fprintf(outStream, "%*s|%*s", paddingLeft, "", paddingRight, "")
 	}
 	fmt.Fprintf(outStream, "\n")
 
-	// Render the board
 	for _, row := range board {
-		// Print initial left padding for the first vertical line
 		fmt.Fprintf(outStream, "%*s", paddingLeft, "")
 
 		for i := 0; i < len(participants); i++ {
-			// Print vertical line
 			fmt.Fprintf(outStream, "|")
 
-			// Determine what connects to the next vertical line (if not the last one)
 			if i < len(participants)-1 {
-				// We need to fill paddingRight, plus the next paddingLeft, with either spaces or hyphens
 				connectionLen := paddingRight + paddingLeft
 				if row[i] {
 					fmt.Fprintf(outStream, "%s", strings.Repeat("-", connectionLen))
@@ -187,7 +171,6 @@ func renderAmidakuji(outStream io.Writer, board [][]bool, participants []string,
 					fmt.Fprintf(outStream, "%s", strings.Repeat(" ", connectionLen))
 				}
 			} else {
-				// Last column, just print right padding
 				fmt.Fprintf(outStream, "%*s", paddingRight, "")
 			}
 		}
@@ -200,13 +183,11 @@ func renderAmidakuji(outStream io.Writer, board [][]bool, participants []string,
 		fmt.Fprintf(outStream, "\n")
 	}
 
-	// Render goals
 	for _, g := range goals {
 		fmt.Fprintf(outStream, "%-*s", colWidth, fmt.Sprintf(" %s", g))
 	}
 	fmt.Fprintf(outStream, "\n\n")
 
-	// Render results
 	fmt.Fprintf(outStream, "Results:\n")
 	for _, p := range participants {
 		fmt.Fprintf(outStream, "  %s -> %s\n", p, results[p])
