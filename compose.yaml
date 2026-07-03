@@ -1,0 +1,29 @@
+# Podman Compose / Docker Compose compatible configuration.
+# Usage (Podman):  podman compose run --rm dev <command>
+# Usage (Docker):  docker compose run --rm dev <command>
+#
+# Common commands:
+#   podman compose run --rm dev go test -v -race ./...
+#   podman compose run --rm dev go build -o developer-help-tool-cli ./src
+#   podman compose run --rm dev go vet ./...
+#   podman compose run --rm dev go fmt ./...
+
+services:
+  dev:
+    build:
+      context: .
+      target: dev
+    volumes:
+      # Mount source code so changes are reflected without rebuilding the image.
+      - .:/app:z
+      # Persist the Go module cache across runs.
+      - go-mod-cache:/go/pkg/mod
+      # Persist the Go build cache across runs.
+      - go-build-cache:/root/.cache/go-build
+    working_dir: /app
+    # Keep container alive when run as a long-lived service (`podman compose up`).
+    command: ["tail", "-f", "/dev/null"]
+
+volumes:
+  go-mod-cache:
+  go-build-cache:
