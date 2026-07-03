@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.0
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6.5.0
         with:
           go-version-file: 'go.mod'
 
@@ -56,10 +56,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.0
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6.5.0
         with:
           go-version-file: 'go.mod'
 
@@ -75,10 +75,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.0
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6.5.0
         with:
           go-version-file: 'go.mod'
 
@@ -89,7 +89,7 @@ jobs:
         run: go build -v -o developer-help-tool-cli ./src
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: developer-help-tool-cli-mac-arm64
           path: developer-help-tool-cli
