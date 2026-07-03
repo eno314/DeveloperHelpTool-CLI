@@ -1,5 +1,9 @@
 # Agent Rules for DeveloperHelpTool-CLI
 
+## Implementation Policy
+
+Before writing, modifying, or reviewing any code, you MUST always read and strictly adhere to the guidelines defined in `.agents/implementation_policy.md`.
+
 ## Development Environment
 
 This project uses **Podman** as the local development environment.
