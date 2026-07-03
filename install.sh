@@ -21,14 +21,28 @@ BINARY_NAME="developer-help-tool-cli"
 VERSION=${1:-latest}
 
 if [ "$VERSION" = "latest" ]; then
-    BINARY_URL="https://github.com/eno314/DeveloperHelpTool-CLI/releases/latest/download/developer-help-tool-cli-darwin-arm64"
-    echo "Downloading $BINARY_NAME (latest release) for macOS arm64..."
+    if command -v curl >/dev/null 2>&1; then
+        LATEST_TAG=$(curl -sL https://api.github.com/repos/eno314/DeveloperHelpTool-CLI/releases/latest | grep '"tag_name":' | cut -d '"' -f 4)
+    elif command -v wget >/dev/null 2>&1; then
+        LATEST_TAG=$(wget -qO- https://api.github.com/repos/eno314/DeveloperHelpTool-CLI/releases/latest | grep '"tag_name":' | cut -d '"' -f 4)
+    else
+        echo "Error: wget or curl is required."
+        exit 1
+    fi
+
+    if [ -z "$LATEST_TAG" ]; then
+        echo "Error: Could not determine the latest release tag."
+        exit 1
+    fi
+
+    BINARY_URL="https://github.com/eno314/DeveloperHelpTool-CLI/releases/download/$LATEST_TAG/developer-help-tool-cli-$LATEST_TAG-darwin-arm64"
+    echo "Downloading $BINARY_NAME ($LATEST_TAG) for macOS arm64..."
 else
     # Ensure version starts with 'v' if it's a typical semver
     if [[ ! "$VERSION" =~ ^v ]]; then
         VERSION="v$VERSION"
     fi
-    BINARY_URL="https://github.com/eno314/DeveloperHelpTool-CLI/releases/download/$VERSION/developer-help-tool-cli-darwin-arm64"
+    BINARY_URL="https://github.com/eno314/DeveloperHelpTool-CLI/releases/download/$VERSION/developer-help-tool-cli-$VERSION-darwin-arm64"
     echo "Downloading $BINARY_NAME (version $VERSION) for macOS arm64..."
 fi
 
