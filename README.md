@@ -106,3 +106,51 @@ If you need help or want to see all available commands, run:
 ```bash
 developer-help-tool-cli --help
 ```
+
+## Development
+
+This project provides a [Podman](https://podman.io/)-based development environment so you can build and test without installing Go locally.
+
+### Prerequisites
+
+- [Podman](https://podman.io/getting-started/installation) (v4.0+)
+- [podman-compose](https://github.com/containers/podman-compose) — install via Homebrew:
+
+  ```bash
+  brew install podman-compose
+  ```
+
+> **Note:** The `compose.yaml` is also compatible with [Docker Compose](https://docs.docker.com/compose/) if you prefer Docker.
+
+### Build the development image
+
+```bash
+podman compose build
+```
+
+### Run tests
+
+```bash
+podman compose run --rm dev go test -v -race ./...
+```
+
+### Build the binary (Linux)
+
+```bash
+podman compose run --rm dev go build -o developer-help-tool-cli ./src
+```
+
+### Lint
+
+```bash
+podman compose run --rm dev go vet ./...
+podman compose run --rm dev go fmt ./...
+```
+
+### Interactive shell
+
+If you want to explore the container interactively:
+
+```bash
+podman compose run --rm dev bash
+```
