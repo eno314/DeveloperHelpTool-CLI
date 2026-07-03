@@ -100,18 +100,18 @@ func RunHttpDiff(args []string, outStream, errStream io.Writer) int {
 func doRequest(client *http.Client, url string) (*http.Response, string, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("creating request for %s: %w", url, err)
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("executing request to %s: %w", url, err)
 	}
 	defer resp.Body.Close()
 
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("reading response body from %s: %w", url, err)
 	}
 
 	return resp, string(bodyBytes), nil

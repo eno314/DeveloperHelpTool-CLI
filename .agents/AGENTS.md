@@ -54,3 +54,7 @@ env -u GITHUB_TOKEN gh release create ...
 ```
 
 This is a known IDE behaviour, not a misconfiguration in this project.
+
+## Language Preference
+
+Always communicate with the user and write plans, artifacts, and documentation in Japanese.

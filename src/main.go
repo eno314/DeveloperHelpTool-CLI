@@ -38,19 +38,25 @@ func run(args []string, outStream, errStream io.Writer) int {
 	}
 
 	command := args[1]
-	switch command {
-	case "amidakuji":
-		return features.RunAmidakuji(args[2:], outStream, errStream)
-	case "httpdiff":
-		return features.RunHttpDiff(args[2:], outStream, errStream)
-	case "-h", "--help":
+	if command == "-h" || command == "--help" {
 		flags.Usage()
 		return 0
-	default:
+	}
+
+	type commandFunc func(args []string, outStream, errStream io.Writer) int
+	commands := map[string]commandFunc{
+		"amidakuji": features.RunAmidakuji,
+		"httpdiff":  features.RunHttpDiff,
+	}
+
+	fn, ok := commands[command]
+	if !ok {
 		fmt.Fprintf(errStream, "Unknown command: %s\n", command)
 		flags.Usage()
 		return 1
 	}
+
+	return fn(args[2:], outStream, errStream)
 }
 
 func main() {

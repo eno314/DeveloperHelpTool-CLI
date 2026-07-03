@@ -231,3 +231,11 @@ When guidelines conflict, apply them in this order:
 3. **Testable** — pure functions, localized side effects
 4. **Malleable** — data-driven, dependency injection
 5. **Minimal dependencies** — fewest external libraries
+
+---
+
+## 7. Code Review and Quality Gates
+
+**Principle: Every implementation must be reviewed using the `code-review-and-quality` skill.**
+
+Before merging any change or finalizing an implementation, you must explicitly invoke the `code-review-and-quality` skill to evaluate the code against the five axes (Correctness, Readability, Architecture, Security, Performance). Fix any required or critical issues identified during this review before proceeding.
