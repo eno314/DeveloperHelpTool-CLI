@@ -37,3 +37,20 @@ Rebuild the dev image (`podman compose build`) after any of the following change
 
 - `go.mod` or `go.sum` is updated
 - `Dockerfile` is modified
+
+## GitHub CLI (`gh`) Usage
+
+The Antigravity IDE automatically injects a dummy `GITHUB_TOKEN` environment variable
+(`github_pat_antigravitydummytoken`) into every terminal session. This causes `gh` commands
+to fail with `HTTP 401: Bad credentials` because the dummy token takes precedence over the
+keyring credential.
+
+**Always prefix `gh` commands with `env -u GITHUB_TOKEN`:**
+
+```bash
+env -u GITHUB_TOKEN gh pr create ...
+env -u GITHUB_TOKEN gh pr list
+env -u GITHUB_TOKEN gh release create ...
+```
+
+This is a known IDE behaviour, not a misconfiguration in this project.
