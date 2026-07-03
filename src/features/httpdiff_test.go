@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 )
@@ -27,6 +28,46 @@ func TestRunHttpDiff(t *testing.T) {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprint(w, "Error 1")
 	})
+	mux1.HandleFunc("/post-test", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		if r.Header.Get("X-Test-Header") != "foo" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(r.Body)
+		if buf.String() != "hello world" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, "success body")
+	})
+	mux1.HandleFunc("/post-file", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		if r.Header.Get("X-Test-Header") != "bar" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(r.Body)
+		if buf.String() != "hello file" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, "success file")
+	})
+	mux1.HandleFunc("/post-diff", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, "diff1")
+	})
 
 	server1 := httptest.NewServer(mux1)
 	defer server1.Close()
@@ -48,8 +89,55 @@ func TestRunHttpDiff(t *testing.T) {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprint(w, "Error 1") // Same error body to test we still diff it
 	})
+	mux2.HandleFunc("/post-test", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		if r.Header.Get("X-Test-Header") != "foo" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(r.Body)
+		if buf.String() != "hello world" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, "success body")
+	})
+	mux2.HandleFunc("/post-file", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		if r.Header.Get("X-Test-Header") != "bar" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(r.Body)
+		if buf.String() != "hello file" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, "success file")
+	})
+	mux2.HandleFunc("/post-diff", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, "diff2")
+	})
 	server2 := httptest.NewServer(mux2)
 	defer server2.Close()
+
+	// Create a temp file for body-file testing
+	err := os.WriteFile("test_body.txt", []byte("hello file"), 0644)
+	if err != nil {
+		t.Fatalf("failed to create test body file: %v", err)
+	}
+	defer os.Remove("test_body.txt")
 
 	tests := []struct {
 		name         string
@@ -106,6 +194,41 @@ func TestRunHttpDiff(t *testing.T) {
 			expectedCode: 1, // Has errors
 			expectedOut:  "Comparing",
 			expectedErr:  "Error requesting",
+		},
+		{
+			name:         "Conflict validation: body and body-file",
+			args:         []string{"httpdiff", "--host1", server1.URL, "--host2", server2.URL, "--paths", "/same", "--body", "hello", "--body-file", "test_body.txt"},
+			expectedCode: 1,
+			expectedOut:  "",
+			expectedErr:  "Error: cannot specify both --body and --body-file",
+		},
+		{
+			name:         "Header format validation: no colon",
+			args:         []string{"httpdiff", "--host1", server1.URL, "--host2", server2.URL, "--paths", "/same", "--header", "InvalidHeader"},
+			expectedCode: 1,
+			expectedOut:  "",
+			expectedErr:  "Error: invalid header format: InvalidHeader",
+		},
+		{
+			name:         "POST request with custom header and inline body",
+			args:         []string{"httpdiff", "--host1", server1.URL, "--host2", server2.URL, "--paths", "/post-test", "--method", "POST", "--header", "X-Test-Header: foo", "--body", "hello world"},
+			expectedCode: 0,
+			expectedOut:  "No differences found.",
+			expectedErr:  "",
+		},
+		{
+			name:         "POST request with custom header and body file",
+			args:         []string{"httpdiff", "--host1", server1.URL, "--host2", server2.URL, "--paths", "/post-file", "--method", "post", "--header", "X-Test-Header: bar", "--body-file", "test_body.txt"},
+			expectedCode: 0,
+			expectedOut:  "No differences found.",
+			expectedErr:  "",
+		},
+		{
+			name:         "POST request with different responses",
+			args:         []string{"httpdiff", "--host1", server1.URL, "--host2", server2.URL, "--paths", "/post-diff", "--method", "POST"},
+			expectedCode: 0,
+			expectedOut:  "Differences found:\n",
+			expectedErr:  "",
 		},
 	}
 
