@@ -232,6 +232,93 @@ func RunAmidakuji(args []string, out, err io.Writer) int {
 
 ---
 
+## 8. Function Size and Control Flow
+
+**Principle: Keep functions short, flat, and focused. Apply the core concepts of "Five Lines of Code" modified for Go.**
+
+### Function length limit (10-line rule)
+
+A function body should not exceed **10 lines** (excluding the opening and closing braces).
+- **Exception:** Standard Go error handling blocks (`if err != nil { return ... }`) are excluded from the line count. The goal is to keep the actual business logic under **5 lines**.
+
+```go
+// Good: Clear, flat, and fits within the line limit (excluding error check)
+func (s *Service) FetchData(id string) (*Data, error) {
+    raw, err := s.client.Get(id)
+    if err != nil {
+        return nil, fmt.Errorf("getting raw data: %w", err) // Excluded from line count
+    }
+    
+    data, err := parseData(raw)
+    if err != nil {
+        return nil, fmt.Errorf("parsing: %w", err) // Excluded from line count
+    }
+    
+    return data, nil
+}
+```
+
+### No `else` and prefer guard clauses
+
+Do not use the `else` keyword. Handle negative or error cases first, return early (Guard Clauses), and keep the happy path at the minimal indentation level.
+
+```go
+// Bad: Use of else increases cognitive load and indentation
+func checkStatus(status string) string {
+    if status == "active" {
+        return "OK"
+    } else {
+        return "Disabled"
+    }
+}
+
+// Good: No else, flat structure
+func checkStatus(status string) string {
+    if status == "active" {
+        return "OK"
+    }
+    return "Disabled"
+}
+```
+
+### Limit nesting levels
+
+Nesting (e.g., nested `if`, `for`, `switch`) inside a single function must be limited to **1 level**. If you need a second level of nesting, extract the inner block into a separate helper function.
+
+```go
+// Bad: 2 levels of nesting (for -> if)
+func printActive(users []User) {
+    for _, u := range users {
+        if u.IsActive {
+            fmt.Println(u.Name)
+        }
+    }
+}
+
+// Good: Extracting inner logic to keep nesting to 1 level
+func printActive(users []User) {
+    for _, u := range users {
+        printIfActive(u)
+    }
+}
+
+func printIfActive(u User) {
+    if u.IsActive {
+        fmt.Println(u.Name)
+    }
+}
+```
+
+---
+
+## 9. Code Review and Quality Gates
+
+**Principle: Every implementation must be reviewed using the `code-review-and-quality` skill.**
+
+Before merging any change or finalizing an implementation, you must explicitly invoke the `code-review-and-quality` skill to evaluate the code against the five axes (Correctness, Readability, Architecture, Security, Performance). Fix any required or critical issues identified during this review before proceeding.
+
+---
+
 ## Priority Order
 
 When guidelines conflict, apply them in this order:
@@ -241,11 +328,3 @@ When guidelines conflict, apply them in this order:
 3. **Testable** — pure functions, localized side effects
 4. **Malleable** — data-driven, dependency injection
 5. **Minimal dependencies** — fewest external libraries
-
----
-
-## 8. Code Review and Quality Gates
-
-**Principle: Every implementation must be reviewed using the `code-review-and-quality` skill.**
-
-Before merging any change or finalizing an implementation, you must explicitly invoke the `code-review-and-quality` skill to evaluate the code against the five axes (Correctness, Readability, Architecture, Security, Performance). Fix any required or critical issues identified during this review before proceeding.
